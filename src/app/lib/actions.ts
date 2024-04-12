@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
 import { Product } from "./definitions";
+import { sql } from "@vercel/postgres";
 
 const FormSchema = z.object({
   id: z.string(),
@@ -14,7 +15,7 @@ const FormSchema = z.object({
 
 const CreateItem = FormSchema.omit({ id: true });
 
-export type ProductState = {
+export type State = {
   errors?: {
     name?: string[];
     description?: string[];
@@ -22,13 +23,9 @@ export type ProductState = {
     quantity?: string[];
   };
   message?: string | null;
-  successEdit?: boolean;
-  editId?: string;
-  successCreate?: boolean;
-  products: Product[];
 };
 
-export async function createItem(prevState: ProductState, formData: FormData) {
+export async function createProduct(prevState: State, formData: FormData) {
   const validatedFields = CreateItem.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
@@ -37,88 +34,60 @@ export async function createItem(prevState: ProductState, formData: FormData) {
   });
 
   if (!validatedFields.success) {
-    return <ProductState>{
+    return <State>{
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing fields. Failed to create item",
-      successCreate: false,
-      products: prevState.products,
     };
   }
 
+  const { name, description, price, quantity } = validatedFields.data;
+
   try {
-    const { name, description, price, quantity } = validatedFields.data;
+    await sql`
+      INSERT INTO products (name, description, price, quantity)
+      VALUES (${name}, ${description}, ${price}, ${quantity})
+    `;
 
-    let newProducts = prevState.products.concat({
-      id: uuidv4(),
-      name: name,
-      description: description,
-      price: price,
-      quantity: quantity,
-    });
-
-    return <ProductState>{
-      message: "Successfully updated item",
-      errors: {},
-      successCreate: true,
-      products: newProducts,
-    };
+    return <State>{};
   } catch (error) {
-    return <ProductState>{
+    return <State>{
       message: "Database Error: Failed to update products",
-      errors: error,
-      successCreate: false,
-      products: prevState.products,
     };
   }
 }
 
-export async function editItem(prevState: ProductState, formData: FormData) {
-  const validatedFields = FormSchema.safeParse({
-    id: formData.get("id"),
+export async function updateProduct(
+  id: string,
+  prevState: State,
+  formData: FormData
+) {
+  const updatedFields = FormSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
     price: formData.get("price"),
     quantity: formData.get("quantity"),
   });
 
-  if (!validatedFields.success) {
-    return <ProductState>{
-      errors: validatedFields.error.flatten().fieldErrors,
+  if (!updatedFields.success) {
+    return <State>{
+      errors: updatedFields.error.flatten().fieldErrors,
       message: "Missing fields. Failed to update item",
-      successEdit: false,
-      products: prevState.products,
     };
   }
 
+  const { name, description, price, quantity } = updatedFields.data;
+
   try {
-    const { id, name, description, price, quantity } = validatedFields.data;
+    await sql`
+      UPDATE products
+      SET name = ${name}, description = ${description}, price = ${price}, quantity = ${quantity}
+      WHERE id = ${id}
+    `;
 
-    let newProducts = prevState.products.map((product) => {
-      if (product.id == id) {
-        return <Product>{
-          id: id,
-          name: name,
-          description: description,
-          price: price,
-          quantity: quantity,
-        };
-      }
-
-      return product;
-    });
-
-    return <ProductState>{
-      message: "Successfully updated item",
-      errors: {},
-      successEdit: true,
-      products: newProducts,
-    };
+    return <State>{};
   } catch (error) {
-    return <ProductState>{
+    return <State>{
       message: "Database Error: Failed to update products",
-      errors: error,
-      successEdit: false,
-      products: prevState.products,
     };
   }
 }

@@ -1,7 +1,7 @@
 import { Product } from "./definitions";
 import { v4 as uuidv4 } from "uuid";
 
-export const products: Product[] = [
+export const products = [
   {
     id: uuidv4(),
     name: "Product 1",
