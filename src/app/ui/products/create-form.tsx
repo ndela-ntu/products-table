@@ -1,3 +1,5 @@
+"use client";
+
 import { State, createProduct } from "@/app/lib/actions";
 import React, { useContext, useState } from "react";
 import { useFormState } from "react-dom";

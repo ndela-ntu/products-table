@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useContext, useState } from "react";
 import { Product } from "@/app/lib/definitions";
 import { useFormState } from "react-dom";
