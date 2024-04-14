@@ -38,3 +38,15 @@ async function seedProducts(client) {
     throw error;
   }
 }
+
+async function main() {
+  const client = await db.connect();
+
+  await seedProducts(client);
+
+  await client.end();
+}
+
+main().catch((err) => {
+  console.error("An error occurred while attempting to see the database:", err);
+});
