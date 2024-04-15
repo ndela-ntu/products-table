@@ -6,7 +6,7 @@ async function seedProducts(client) {
   try {
     await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
-    const createTable = await client.slq`
+    const createTable = await client.sql`
     CREATE TABLE IF NOT EXISTS products (
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
         name VARCHAR(255) NOT NULL,

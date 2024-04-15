@@ -6,9 +6,9 @@ type Props = {};
 
 export default function CreateProductPage({}: Props) {
   return (
-    <>
+    <div className="p-24">
       <PageHeader heading="Create Product" />
       <CreateProductForm />
-    </>
+    </div>
   );
 }

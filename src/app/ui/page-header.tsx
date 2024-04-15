@@ -5,5 +5,5 @@ type Props = {
 };
 
 export default function PageHeader({ heading }: Props) {
-  return <h2>{heading}</h2>;
+  return <h2 className="text-xl">{heading}</h2>;
 }

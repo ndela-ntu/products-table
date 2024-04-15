@@ -1,7 +1,9 @@
+"use server";
+
 import { z } from "zod";
-import { v4 as uuidv4 } from "uuid";
-import { Product } from "./definitions";
 import { sql } from "@vercel/postgres";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 const FormSchema = z.object({
   id: z.string(),
@@ -14,6 +16,7 @@ const FormSchema = z.object({
 });
 
 const CreateItem = FormSchema.omit({ id: true });
+const UpdateItem = FormSchema.omit({ id: true });
 
 export type State = {
   errors?: {
@@ -47,13 +50,14 @@ export async function createProduct(prevState: State, formData: FormData) {
       INSERT INTO products (name, description, price, quantity)
       VALUES (${name}, ${description}, ${price}, ${quantity})
     `;
-
-    return <State>{};
   } catch (error) {
     return <State>{
       message: "Database Error: Failed to update products",
     };
   }
+
+  revalidatePath("/dashboard/products");
+  redirect("/dashboard/products");
 }
 
 export async function updateProduct(
@@ -61,7 +65,7 @@ export async function updateProduct(
   prevState: State,
   formData: FormData
 ) {
-  const updatedFields = FormSchema.safeParse({
+  const updatedFields = UpdateItem.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
     price: formData.get("price"),
@@ -83,11 +87,23 @@ export async function updateProduct(
       SET name = ${name}, description = ${description}, price = ${price}, quantity = ${quantity}
       WHERE id = ${id}
     `;
-
-    return <State>{};
   } catch (error) {
     return <State>{
-      message: "Database Error: Failed to update products",
+      message: `Database Error: Failed to update products: ${error}`,
     };
+  }
+
+  revalidatePath("/dashboard/products");
+  redirect("/dashboard/products");
+}
+
+export async function deleteProduct(id: string) {
+  try {
+    await sql`DELETE FROM products WHERE id = ${id}`;
+    revalidatePath("/dashboard/products");
+
+    return { message: "Deleted Product" };
+  } catch (error) {
+    return { message: "Database Error: Failed to Delete Product" };
   }
 }

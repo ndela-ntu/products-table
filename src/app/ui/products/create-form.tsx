@@ -2,15 +2,20 @@
 
 import { State, createProduct } from "@/app/lib/actions";
 import React, { useContext, useState } from "react";
-import { useFormState } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom";
 
 export default function CreateProductForm() {
+  const formStatus = useFormStatus();
+
   const initialState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState<State, FormData>(createProduct, initialState);
+  const [state, dispatch] = useFormState<State, FormData>(
+    createProduct,
+    initialState
+  );
 
   return (
     <form action={dispatch}>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col mt-5">
         <div className="flex flex-col mb-4">
           <label htmlFor="name" className="">
             Name
@@ -18,8 +23,9 @@ export default function CreateProductForm() {
           <input
             type="text"
             name="name"
+            id="name"
             placeholder="Name"
-            className="input input-bordered input-sm w-full max-w-xs"
+            className="input input-bordered"
           />
           <div id="name-error" aria-live="polite" aria-atomic="true">
             {state.errors?.name &&
@@ -30,13 +36,14 @@ export default function CreateProductForm() {
               ))}
           </div>
         </div>
-        <div>
+        <div className="flex flex-col mb-4">
           <label htmlFor="description" className="">
             Description
           </label>
           <textarea
-            className="textarea textarea-bordered w-full"
+            className="textarea textarea-bordered"
             name="description"
+            id="description"
             placeholder="Description"
           ></textarea>
           <div id="description-error" aria-live="polite" aria-atomic="true">
@@ -48,15 +55,16 @@ export default function CreateProductForm() {
               ))}
           </div>
         </div>
-        <div>
+        <div className="flex flex-col mb-4">
           <label htmlFor="price" className="">
             Price
           </label>
           <input
             type="number"
             name="price"
+            id="price"
             placeholder="Price"
-            className="input input-bordered input-sm w-1/3 max-w-xs"
+            className="input input-bordered"
           />
           <div id="price-error" aria-live="polite" aria-atomic="true">
             {state.errors?.price &&
@@ -67,15 +75,16 @@ export default function CreateProductForm() {
               ))}
           </div>
         </div>
-        <div>
+        <div className="flex flex-col mb-4">
           <label htmlFor="quantity" className="">
             Quantity
           </label>
           <input
             type="number"
             name="quantity"
+            id="quantity"
             placeholder="Quantity"
-            className="input input-bordered input-sm w-2/5 max-w-xs"
+            className="input input-bordered"
           />
           <div id="quantity-error" aria-live="polite" aria-atomic="true">
             {state.errors?.quantity &&
@@ -86,8 +95,12 @@ export default function CreateProductForm() {
               ))}
           </div>
         </div>
-        <button className="btn" type="submit">
-          Save
+        <button
+          className="btn text-sm text-white transition-colors hover:bg-[#326AE2] bg-[#2563EB] rounded-md"
+          disabled={formStatus.pending}
+          type="submit"
+        >
+          {formStatus.pending ? "Saving" : "Save"}
         </button>
       </div>
     </form>

@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import Link from "next/link";
 import { Product } from "../../lib/definitions";
+import DeleteProduct from "./delete-button";
 
 type Props = {
   index: number;
@@ -16,8 +17,15 @@ export default function ViewProduct({ index, product }: Props) {
       <td>{product.price}</td>
       <td>{product.quantity}</td>
       <td>
-        <Link href={`/dashboard/products/${product.id}/edit`}>Edit</Link>
-        <button className="btn">Delete</button>
+        <div className="flex space-x-2">
+          <Link
+            href={`/dashboard/products/${product.id}/edit`}
+            className="flex items-center px-4 py-2 text-sm text-white transition-colors hover:bg-[#326AE2] bg-[#2563EB] rounded-md"
+          >
+            Edit
+          </Link>
+          <DeleteProduct id={product.id} />
+        </div>
       </td>
     </tr>
   );
